@@ -1,5 +1,5 @@
 dev:
-  image: hgezim/wp-nocache:2
+  image: hgezim/wp-nocache:2.1
   links:
     - db:mysql
   ports:
