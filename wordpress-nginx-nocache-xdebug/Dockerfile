@@ -25,11 +25,12 @@ RUN curl https://wordpress.org/latest.tar.gz -O
 
 RUN tar xzf latest.tar.gz
 RUN rm -rf latest.tar.gz
-RUN cp -r wordpress/* /usr/share/nginx/html/
+RUN mkdir /usr/share/nginx/html/wordpress && cp -r wordpress/* /usr/share/nginx/html/wordpress/
+RUN cp /usr/share/nginx/html/wordpress/wp-config-sample.php /usr/share/nginx/html/wordpress/wp-config.php
 
 EXPOSE 8080
 
-RUN sudo chown -R www-data:www-data /usr/share/nginx/html
+RUN sudo chown -R www-data:www-data /usr/share/nginx/html/wordpress
 
 ADD ./nginx_wordpress /etc/nginx/sites-enabled/
 
@@ -39,6 +40,12 @@ COPY ./supervisor_fpm.conf /etc/supervisor/conf.d/
 
 # create wordpress db if it doesn't exist - actually, let's let this be created by mysql image
 # update config file 
+RUN sed -i "s/define('DB_NAME', 'database_name_here');/define('DB_NAME', 'wordpress');/"	/usr/share/nginx/html/wordpress/wp-config.php
+RUN sed -i "s/define('DB_USER', 'username_here');/define('DB_USER', 'root');/"	/usr/share/nginx/html/wordpress/wp-config.php
+RUN sed -i "s/define('DB_PASSWORD', 'password_here');/define('DB_PASSWORD', 'root');/"	/usr/share/nginx/html/wordpress/wp-config.php
+RUN sed -i "s/define('DB_HOST', 'localhost');/define('DB_HOST', 'db');/"	/usr/share/nginx/html/wordpress/wp-config.php
+RUN sed -i "s/define('WP_DEBUG', false);/define('WP_DEBUG', true);/"	/usr/share/nginx/html/wordpress/wp-config.php
+
 # that's it!
 
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
